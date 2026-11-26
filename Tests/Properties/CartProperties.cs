@@ -8,6 +8,9 @@ using FsCheck.Xunit;
 using Shopping_Cart_System.Domain;
 using Shopping_Cart_System.Tests.Arbitraries;
 using Xunit;
+using FluentAssertions;
+using FsCheck;
+using FsCheck.Fluent;
 
 
 namespace Shopping_Cart_System.Tests.Properties
@@ -38,7 +41,8 @@ namespace Shopping_Cart_System.Tests.Properties
         public Property Add_then_remove_restore_cart_state_when(Product[] initialProducts, Product candidate, int qty)
         {
             var cart = BuildCart(initialProducts, qty);
-            bool applicable = cart.Items.All(i => i.Product.Id != candidate.Id);
+            var freshCandidate = candidate with { Id = $"TEMP_{candidate.Id}" };
+            bool applicable = qty > 0;
             bool ok = true;
 
             if (applicable)
@@ -46,11 +50,10 @@ namespace Shopping_Cart_System.Tests.Properties
                 decimal beforeTotal = cart.TotalPrice();
                 int beforeCount = cart.Items.Count;
 
-                cart.Add(candidate, qty);
-                cart.Remove(candidate.Id);
+                cart.Add(freshCandidate, qty);
+                cart.Remove(freshCandidate.Id);
 
                 ok = cart.TotalPrice() == beforeTotal && cart.Items.Count == beforeCount;
-
             }
 
             return ok.When(applicable);
@@ -76,23 +79,25 @@ namespace Shopping_Cart_System.Tests.Properties
 
         }
 
-        [PropertyTab(Arbitrary = new[] { typeof(ShopArbitraries) })]
-        public Property Adding_priced_product_increases_total_when(Product[] initialProducts, Product extra, int qty)
+        [Property(Arbitrary = new[] { typeof(ShopArbitraries) })]
+        public Property Adding_priced_product_increases_total_when(Product[] initialProducts, int baseQty, Product extra, int extraQty)
         {
-            var cart = BuildCart(initialProducts, qty);
-            bool applicable = extra.Price > 0m && cart.Items.All(i => i.Product.Id != extra.Id);
+            var cart = BuildCart(initialProducts, baseQty);
+            var distinctExtra = extra with { Id = $"NEW_{extra.Id}" };
+            bool applicable = extra.Price > 0m && extraQty > 0;
+            bool ok = true;
 
             if (applicable)
             {
                 decimal beforeTotal = cart.TotalPrice();
-                cart.Add(extra, qty);
+                cart.Add(distinctExtra, extraQty);
                 ok = cart.TotalPrice() > beforeTotal;
             }
 
             return ok.When(applicable);
         }
 
-        [PropertyTab(Arbitrary = new[] { typeof(ShopArbitraries) })]
+        [Property(Arbitrary = new[] { typeof(ShopArbitraries) })]
         public void Remove_missing_product_throws_InvalidOperationException(Product[] products, int qty, string missingId)
         {
             var cart = BuildCart(products, qty);

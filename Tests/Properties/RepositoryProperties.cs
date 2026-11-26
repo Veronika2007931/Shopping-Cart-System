@@ -8,6 +8,9 @@ using FsCheck.Xunit;
 using Shopping_Cart_System.Domain;
 using Shopping_Cart_System.Tests.Arbitraries;
 using Xunit;
+using FluentAssertions;
+using FsCheck;
+using FsCheck.Fluent;
 
 namespace Shopping_Cart_System.Tests.Properties
 {
@@ -15,7 +18,7 @@ namespace Shopping_Cart_System.Tests.Properties
 
     public class RepositoryProperties
     {
-        [PropertyTab(Arbitrary = new[] { typeof(ShopArbitraries) })]
+        [Property(Arbitrary = new[] { typeof(ShopArbitraries) })]
         public void SaveCart_produces_same_repository_state_as_direct_Save(Product[] products, int qty)
         {
             var cartForService = new ShoppingCart();

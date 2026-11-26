@@ -15,8 +15,10 @@ namespace Shopping_Cart_System.Tests.Arbitraries
         // Невеликий набір Id робить повтори частими — це потрібно для перевірки повторного Add.
         private static Gen<string> NonEmptyAlphaString()
         {
-            var ids = Gen.Choose(1, 8).Selet(nameof => $"P{n}");
-            var names = Gen.Elemeents("Apple", "Milk", "Coffe", "Cheese", "Tea", "Butter", "Rice", "Bread");
+            var ids = Gen.Choose(1, 8).Select(n => $"P{n}");
+            var names = Gen.Elements("Apple", "Milk", "Coffe", "Cheese", "Tea", "Butter", "Rice", "Bread");
+
+            return Gen.OneOf(ids, names);
         }
 
         // Product: Id і Name — непорожні, Price >= 0 (decimal), напр. Gen.Choose(0, 100_000).Select(c => c / 100m).
@@ -36,7 +38,7 @@ namespace Shopping_Cart_System.Tests.Arbitraries
             from price in priceGen
             select new Product(id, name, price);
 
-            return gen.ToArbitray();
+            return gen.ToArbitrary();
         }
 
         // Кількість для конструктора CartItem, Add та Increase: завжди >= 1.
@@ -48,7 +50,7 @@ namespace Shopping_Cart_System.Tests.Arbitraries
                 (6, Gen.Choose(1, 100))
             );
 
-            return gen.ToArbitray();
+            return gen.ToArbitrary();
         }
 
         // CartItem = Product + кількість (як VehicleGen будується з FuelTankGen):
@@ -63,7 +65,7 @@ namespace Shopping_Cart_System.Tests.Arbitraries
             from quantity in quantityGen
             select new Domain.CartItem(product, quantity);
 
-            return gen.ToArbitray();
+            return gen.ToArbitrary();
         }
     }
 }
