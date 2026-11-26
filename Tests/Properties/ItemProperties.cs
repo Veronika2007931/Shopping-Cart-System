@@ -15,7 +15,7 @@ namespace Shopping_Cart_System.Tests.Properties
 
     public class ItemProperties
     {
-        [Property(Arbitrary = new[] { typeof(ShopArbitraries) }]
+        [Property(Arbitrary = new[] { typeof(ShopArbitraries) })]
         public PropertyChangedEventArgs Increase_then_decrease_restores_quantity_when(CartItem item, int amount)
         {
             bool applicable = amount > 0;
